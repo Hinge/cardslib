@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ *******************************************************************************
-  ~   Copyright (c) 2013-2014 Gabriele Mariotti.
+  ~ /*******************************************************************************
+  ~   Copyright (c) 2013 Gabriele Mariotti.
   ~
   ~   Licensed under the Apache License, Version 2.0 (the "License");
   ~   you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
   ~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~   See the License for the specific language governing permissions and
   ~   limitations under the License.
-  ~  *****************************************************************************
+  ~  ******************************************************************************/
   -->
 
 <resources>
@@ -24,7 +24,7 @@
     <dimen name="card_background_default_radius">2dip</dimen>
 
     <!-- Main -->
-    <dimen name="card_main_layout_view_margin_top">0dp</dimen>
+    <dimen name="card_main_layout_view_margin_top">6dp</dimen>
     <dimen name="card_main_layout_view_margin_left">0dp</dimen>
     <dimen name="card_main_layout_view_margin_bottom">0dp</dimen>
     <dimen name="card_main_layout_view_margin_right">0dp</dimen>
@@ -40,15 +40,11 @@
     <dimen name="card_header_button_padding_right">0dp</dimen>
     <dimen name="card_header_button_padding_bottom">0dp</dimen>
     <dimen name="card_header_button_padding_top">0dp</dimen>
-    <dimen name="card_header_button_margin_right">2dp</dimen>
-    <dimen name="card_header_button_overflow_margin_right">3dp</dimen>
 
     <!-- Title Header -->
     <dimen name="card_header_simple_title_margin_left">10dp</dimen>
     <dimen name="card_header_simple_title_margin_top">5dp</dimen>
     <dimen name="card_header_simple_title_text_size">20sp</dimen>
-    <dimen name="card_header_simple_title_margin_right">20dp</dimen>
-    <dimen name="card_header_simple_title_margin_bottom">0dp</dimen>
 
     <!-- Content -->
     <dimen name="card_content_outer_view_margin_top">0dp</dimen>
@@ -78,17 +74,16 @@
 
 
     <!-- List -->
-    <dimen name="list_card_padding_left">8dp</dimen>
-    <dimen name="list_card_padding_right">8dp</dimen>
-    <dimen name="list_card_padding_bottom">6dp</dimen>
-    <dimen name="list_card_padding_top">2dp</dimen>
+    <dimen name="list_card_padding_left">43dp</dimen>
+    <dimen name="list_card_padding_right">24dp</dimen>
+    <dimen name="list_card_padding_bottom">11dp</dimen>
+    <dimen name="list_card_padding_top">22dp</dimen>
 
     <!-- Grid -->
-    <dimen name="grid_card_padding_left">2dp</dimen>
-    <dimen name="grid_card_padding_right">2dp</dimen>
-    <dimen name="grid_card_padding_bottom">2dp</dimen>
-    <dimen name="grid_card_padding_top">2dp</dimen>
-
+    <dimen name="grid_card_padding_left">22dp</dimen>
+    <dimen name="grid_card_padding_right">11dp</dimen>
+    <dimen name="grid_card_padding_bottom">5dp</dimen>
+    <dimen name="grid_card_padding_top">11dp</dimen>
 
 
 </resources>

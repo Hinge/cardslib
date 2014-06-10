@@ -1,6 +1,6 @@
 <!--
-  ~ *******************************************************************************
-  ~   Copyright (c) 2013-2014 Gabriele Mariotti.
+  ~ /*******************************************************************************
+  ~   Copyright (c) 2013 Gabriele Mariotti.
   ~
   ~   Licensed under the Apache License, Version 2.0 (the "License");
   ~   you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
   ~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~   See the License for the specific language governing permissions and
   ~   limitations under the License.
-  ~  *****************************************************************************
+  ~  ******************************************************************************/
   -->
 
 <resources>
@@ -35,14 +35,5 @@
         <attr name="list_card_layout_resourceID" format="reference"/>
 
     </declare-styleable>
-
-    <!-- Used for ForegroundLinearLayout -->
-    <!-- Refer to https://gist.github.com/chrisbanes/9091754 for original code -->
-    <declare-styleable name="ForegroundLinearLayout">
-        <attr name="android:foreground" />
-        <attr name="android:foregroundInsidePadding" />
-        <attr name="android:foregroundGravity" />
-    </declare-styleable>
-
 
 </resources>
