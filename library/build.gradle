@@ -1,24 +1,28 @@
-apply plugin: 'android-sdk-manager'
 apply plugin: 'android-library'
 
-repositories {
-    mavenCentral()
-}
-
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion 19
+    buildToolsVersion "19.1.0"
 
     defaultConfig {
+        applicationId 'it.gmariotti.cardslib.library'
+        versionCode 31
+        versionName "1.6.1-SNAPSHOT"
         minSdkVersion 14
         targetSdkVersion 19
-        versionName project.VERSION_NAME
-        versionCode Integer.parseInt(project.VERSION_CODE)
     }
 
     // This is important, it will run lint checks but won't abort build
     lintOptions {
         abortOnError false
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            res.srcDirs = ['res']
+        }
     }
 }
 
