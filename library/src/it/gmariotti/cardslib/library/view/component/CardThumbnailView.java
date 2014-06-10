@@ -1,6 +1,6 @@
 /*
  * ******************************************************************************
- *   Copyright (c) 2013-2014 Gabriele Mariotti.
+ *   Copyright (c) 2013 Gabriele Mariotti.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -434,16 +434,14 @@ public class CardThumbnailView extends FrameLayout implements CardViewInterface 
     public static boolean cancelPotentialWork(CardThumbnail.CustomSource customSource, ImageView imageView) {
         final BitmapWorkerCustomSourceTask bitmapWorkerTask = getBitmapWorkerCustomSourceTask(imageView);
 
-        if (bitmapWorkerTask != null && bitmapWorkerTask.customSource != null) {
+        if (bitmapWorkerTask != null) {
             final CardThumbnail.CustomSource bitmapWorkerTaskCustomSource = bitmapWorkerTask.customSource;
-            if (bitmapWorkerTaskCustomSource.getTag() != null) {
-                if (!bitmapWorkerTaskCustomSource.getTag().equals(customSource.getTag())) {
-                    // Cancel previous task
-                    bitmapWorkerTask.cancel(true);
-                } else {
-                    // The same work is already in progress
-                    return false;
-                }
+            if (!bitmapWorkerTaskCustomSource.getTag().equals(customSource.getTag())) {
+                // Cancel previous task
+                bitmapWorkerTask.cancel(true);
+            } else {
+                // The same work is already in progress
+                return false;
             }
         }
         // No task associated with the ImageView, or an existing task was cancelled
@@ -708,21 +706,18 @@ public class CardThumbnailView extends FrameLayout implements CardViewInterface 
      * @param result
      */
     protected void sendBroadcast(boolean result) {
+        Intent intent = new Intent();
+        intent.setAction(Constants.IntentManager.INTENT_ACTION_IMAGE_DOWNLOADED);
+        intent.putExtra(Constants.IntentManager.INTENT_ACTION_IMAGE_DOWNLOADED_EXTRA_RESULT, result);
+        if (mLoadingErrorResource)
+            intent.putExtra(Constants.IntentManager.INTENT_ACTION_IMAGE_DOWNLOADED_EXTRA_ERROR_LOADING, true);
+        else
+            intent.putExtra(Constants.IntentManager.INTENT_ACTION_IMAGE_DOWNLOADED_EXTRA_ERROR_LOADING, false);
 
-        if (mCardThumbnail.isSendBroadcastAfterAttach()) {
-            Intent intent = new Intent();
-            intent.setAction(Constants.IntentManager.INTENT_ACTION_IMAGE_DOWNLOADED);
-            intent.putExtra(Constants.IntentManager.INTENT_ACTION_IMAGE_DOWNLOADED_EXTRA_RESULT, result);
-            if (mLoadingErrorResource)
-                intent.putExtra(Constants.IntentManager.INTENT_ACTION_IMAGE_DOWNLOADED_EXTRA_ERROR_LOADING, true);
-            else
-                intent.putExtra(Constants.IntentManager.INTENT_ACTION_IMAGE_DOWNLOADED_EXTRA_ERROR_LOADING, false);
-
-            if (mCardThumbnail != null && mCardThumbnail.getParentCard() != null)
-                intent.putExtra(Constants.IntentManager.INTENT_ACTION_IMAGE_DOWNLOADED_EXTRA_CARD_ID, mCardThumbnail.getParentCard().getId());
-            if (getContext() != null)
-                getContext().sendBroadcast(intent);
-        }
+        if (mCardThumbnail != null && mCardThumbnail.getParentCard() != null)
+            intent.putExtra(Constants.IntentManager.INTENT_ACTION_IMAGE_DOWNLOADED_EXTRA_CARD_ID, mCardThumbnail.getParentCard().getId());
+        if (getContext() != null)
+            getContext().sendBroadcast(intent);
 
     }
 

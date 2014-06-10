@@ -1,6 +1,6 @@
 /*
  * ******************************************************************************
- *   Copyright (c) 2013-2014 Gabriele Mariotti.
+ *   Copyright (c) 2013 Gabriele Mariotti.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -184,11 +184,6 @@ public class Card extends BaseCard {
      */
     protected boolean mMultiChoiceEnabled = false;
 
-    /**
-     * The view to click to enable expand/collapse actions
-     */
-    protected ViewToClickToExpand viewToClickToExpand=null;
-
     // -------------------------------------------------------------
     // Constructors
     // -------------------------------------------------------------
@@ -357,6 +352,7 @@ public class Card extends BaseCard {
      */
     public interface OnSwipeListener {
         public void onSwipe(Card card);
+        public void onAccept(Card card);
     }
 
     /**
@@ -365,9 +361,19 @@ public class Card extends BaseCard {
     public void onSwipeCard() {
         if (isSwipeable() && mOnSwipeListener != null) {
             //mOnSwipeListener.onSwipe(this, mCardView);
+        	Log.d("Card", "fail");
             mOnSwipeListener.onSwipe(this);
         }
     }
+    
+    public void onAcceptCard() {
+		// TODO Auto-generated method stub
+		if (isSwipeable() && mOnSwipeListener != null) {
+            //mOnSwipeListener.onSwipe(this, mCardView);
+			Log.d("Card", "accept");
+            mOnSwipeListener.onAccept(this);
+        }
+	}
 
     /**
      * Returns listener invoked when card is swiped
@@ -385,7 +391,7 @@ public class Card extends BaseCard {
      * @param onSwipeListener listener
      */
     public void setOnSwipeListener(OnSwipeListener onSwipeListener) {
-        if (onSwipeListener != null)
+        if (onSwipeListener != null )
             mIsSwipeable = true;
         else
             mIsSwipeable = false;
@@ -903,21 +909,6 @@ public class Card extends BaseCard {
         return mMultiChoiceEnabled;
     }
 
-    /**
-     * Returns the view to click to enable expand/collapse actions
-     *
-     * @return
-     */
-    public ViewToClickToExpand getViewToClickToExpand() {
-        return viewToClickToExpand;
-    }
+	 
 
-    /**
-     * To set the view to click to enable expand/collapse actions
-     *
-     * @param viewToClickToExpand
-     */
-    public void setViewToClickToExpand(ViewToClickToExpand viewToClickToExpand) {
-        this.viewToClickToExpand = viewToClickToExpand;
-    }
 }

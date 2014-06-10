@@ -1,6 +1,6 @@
 /*
  * ******************************************************************************
- *   Copyright (c) 2013-2014 Gabriele Mariotti.
+ *   Copyright (c) 2013 Gabriele Mariotti.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import it.gmariotti.cardslib.library.R;
@@ -111,17 +110,13 @@ public class CardHeader extends BaseCard {
     /**
      *  Resource ID for PopMenu
      */
-    protected int mPopupMenu=NO_POPUP_MENU;
+    protected int mPopupMenu=-1;
 
     /**
      * Listener invoked when a item in PopupMenu is clicked
      */
     protected OnClickCardHeaderPopupMenuListener mPopupMenuListener;
 
-    /**
-     * Listener invoked when the PopupMenu being prepared
-     */
-    protected OnPrepareCardHeaderPopupMenuListener mPopupMenuPrepareListener;
 
     /**
      * Listener invoked when Other Button is clicked
@@ -142,30 +137,6 @@ public class CardHeader extends BaseCard {
      *  </pre>
      */
     protected int mOtherButtonDrawable=0;
-
-    /**
-     * Use this value to remove popup on overflow button
-     */
-    public static int NO_POPUP_MENU = -1;
-
-
-    /**
-     * Interface for custom overflow animation
-     */
-    public interface CustomOverflowAnimation {
-
-        /**
-         * @return the bitmap from custom source
-         */
-       void doAnimation(Card card,View imageOverflow);
-    }
-
-    protected CustomOverflowAnimation mCustomOverflowAnimation = null;
-
-    /**
-     * Indicates if overflow icon is selected
-     */
-    protected boolean mIsOverflowSelected=false;
 
     // -------------------------------------------------------------
     // Constructors
@@ -204,25 +175,6 @@ public class CardHeader extends BaseCard {
     }
 
     /**
-     * Interface to handle the callback when a popup menu being prepared
-     */
-    public interface OnPrepareCardHeaderPopupMenuListener {
-
-        /**
-         * This is called right before the menu is shown.
-         * You can use this method to efficiently enable/disable items or otherwise
-         * dynamically modify the contents.
-         *
-         * @param card
-         * @param popupMenu
-         *
-         * @return You must return true for the menu to be displayed;
-         *          if you return false it will not be shown.
-         */
-        public boolean onPreparePopupMenu(BaseCard card, PopupMenu popupMenu);
-    }
-
-    /**
      * Interface to handle callbacks when ExpandButton is clicked
      * Currently is never used
      */
@@ -245,35 +197,19 @@ public class CardHeader extends BaseCard {
     /**
      * Sets a popup menu for overflow button.
      * <p/>
-     * Setting the menu resource to {@linl NO_POPUP_MENU} disables the menu for this card.
-     *
-     * @param menuRes  The menu resource ID to use for the card's popup menu.
-     * @param listener A listener invoked when an option in the popup menu is tapped by the user.
-     * @param prepareListener A listener invoked to change dynamically menu items.
-     */
-    public void setPopupMenu(int menuRes, OnClickCardHeaderPopupMenuListener listener, OnPrepareCardHeaderPopupMenuListener prepareListener) {
-        mPopupMenu = menuRes;
-        mPopupMenuListener = listener;
-        mPopupMenuPrepareListener = prepareListener;
-
-        if (menuRes==NO_POPUP_MENU){
-            mIsButtonOverflowVisible=false;
-            listener=null;
-        }else{
-            mIsButtonOverflowVisible=true;
-        }
-    }
-
-    /**
-     * Sets a popup menu for overflow button.
-     * <p/>
-     * Setting the menu resource to {@linl NO_POPUP_MENU} disables the menu for this card.
+     * Setting the menu resource to -1 disables the menu for this card.
      *
      * @param menuRes  The menu resource ID to use for the card's popup menu.
      * @param listener A listener invoked when an option in the popup menu is tapped by the user.
      */
     public void setPopupMenu(int menuRes, OnClickCardHeaderPopupMenuListener listener) {
-        setPopupMenu(menuRes, listener, null);
+        mPopupMenu = menuRes;
+        mPopupMenuListener = listener;
+
+        if (menuRes==-1)
+            mIsButtonOverflowVisible=false;
+        else
+            mIsButtonOverflowVisible=true;
     }
 
     // -------------------------------------------------------------
@@ -282,43 +218,6 @@ public class CardHeader extends BaseCard {
 
 
 
-    // -------------------------------------------------------------
-    // CustomOverflowAnimator
-    // -------------------------------------------------------------
-
-
-    /**
-     * Returns the custom animation on Overflow icon
-     *
-     * @return the listener
-     */
-    public CustomOverflowAnimation getCustomOverflowAnimation() {
-        return  mCustomOverflowAnimation;
-    }
-
-    /**
-     * Sets the listener for a custom animation on Overflow icon
-     *
-     * @param customAnimation
-     */
-    public void setCustomOverflowAnimation(CustomOverflowAnimation customAnimation) {
-        this.mCustomOverflowAnimation = customAnimation;
-
-        if (mCustomOverflowAnimation==null){
-            mIsButtonOverflowVisible=false;
-        }else{
-            mIsButtonOverflowVisible=true;
-        }
-    }
-
-
-    public boolean isOverflowSelected() {
-        return mIsOverflowSelected;
-    }
-
-    public void setOverflowSelected(boolean isOverflowSelected) {
-        mIsOverflowSelected = isOverflowSelected;
-    }
 
 
 
@@ -397,30 +296,12 @@ public class CardHeader extends BaseCard {
     }
 
     /**
-     * Return the popup prepare listener invoked when the PopupMenu is being prepared
-     *
-     * @return  popup listener
-     */
-    public OnPrepareCardHeaderPopupMenuListener getPopupMenuPrepareListener() {
-        return mPopupMenuPrepareListener;
-    }
-
-    /**
      * Sets the popup listener invoked when a item in PopupMenu is clicked
      *
      * @param popupMenuListener  popup listener
      */
     public void setPopupMenuListener(OnClickCardHeaderPopupMenuListener popupMenuListener) {
         mPopupMenuListener = popupMenuListener;
-    }
-
-    /**
-     * Sets the popup listener invoked when the PopupMenu is being prepared
-     *
-     * @param popupMenuListener  popup prepare listener
-     */
-    public void setPopupMenuPrepareListener(OnPrepareCardHeaderPopupMenuListener popupMenuListener) {
-        mPopupMenuPrepareListener = popupMenuListener;
     }
 
     /**
@@ -443,11 +324,17 @@ public class CardHeader extends BaseCard {
 
     /**
      * Indicates if overflow button is visible.
+     * If the Popup Menu is =-1 return  in any case <code>false</code>
      *
-     * @return <code>true</code> if the button is visible
+     * @return <code>true</code> if the button is visible and Popup Menu is assigned.
      */
     public boolean isButtonOverflowVisible() {
-
+        //Without a PopupMenu, the button is not visible
+        if (mPopupMenu==-1){
+            if (mIsButtonOverflowVisible)
+                Log.w("CardHeader","You set visible=true to overflow menu, but you don't add any Popup Menu");
+            return false;
+        }
         return mIsButtonOverflowVisible;
     }
 
@@ -534,6 +421,4 @@ public class CardHeader extends BaseCard {
     public void setOtherButtonDrawable(int otherButtonDrawable) {
         mOtherButtonDrawable = otherButtonDrawable;
     }
-
-
 }

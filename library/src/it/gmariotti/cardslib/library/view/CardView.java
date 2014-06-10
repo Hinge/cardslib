@@ -1,6 +1,6 @@
 /*
  * ******************************************************************************
- *   Copyright (c) 2013-2014 Gabriele Mariotti.
+ *   Copyright (c) 2013 Gabriele Mariotti.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ import it.gmariotti.cardslib.library.internal.Card;
 import it.gmariotti.cardslib.library.internal.CardExpand;
 import it.gmariotti.cardslib.library.internal.CardHeader;
 import it.gmariotti.cardslib.library.internal.CardThumbnail;
-import it.gmariotti.cardslib.library.internal.ViewToClickToExpand;
 import it.gmariotti.cardslib.library.view.component.CardHeaderView;
 import it.gmariotti.cardslib.library.view.component.CardThumbnailView;
 import it.gmariotti.cardslib.library.view.listener.SwipeDismissViewTouchListener;
@@ -278,9 +277,6 @@ public class CardView extends BaseCardView {
         //Setup Listeners
         setupListeners();
 
-        //Setup Expand Action
-        setupExpandAction();
-
         //Setup Drawable Resources
         setupDrawableResources();
     }
@@ -326,12 +322,40 @@ public class CardView extends BaseCardView {
                 //Add Header View
                 mInternalHeaderLayout.addCardHeader(mCardHeader);
 
+                //Config ExpandLayout and its animation
+                if (mInternalExpandLayout !=null && mCardHeader.isButtonExpandVisible() ){
+
+                    //Create the expand/collapse animator
+                    mInternalExpandLayout.getViewTreeObserver().addOnPreDrawListener(
+                            new ViewTreeObserver.OnPreDrawListener() {
+
+                                @Override
+                                public boolean onPreDraw() {
+                                    mInternalExpandLayout.getViewTreeObserver().removeOnPreDrawListener(this);
+                                    //mInternalExpandLayout.setVisibility(View.GONE);
+
+                                    final int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+                                    final int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+                                    mInternalExpandLayout.measure(widthSpec, heightSpec);
+
+                                    final int widthSpecCard = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+                                    final int heightSpecCard = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+                                    mCollapsedHeight = getMeasuredHeight();
+
+                                    mExpandAnimator = createSlideAnimator(0, mInternalExpandLayout.getMeasuredHeight());
+                                    return true;
+                                }
+                            });
+                }
+
+                //Setup action and callback
+                setupExpandCollapseAction();
             }
         }else{
             //No header. Hide layouts
             if (mInternalHeaderLayout !=null){
                 mInternalHeaderLayout.setVisibility(GONE);
-                //mInternalExpandLayout.setVisibility(View.GONE);
+                mInternalExpandLayout.setVisibility(View.GONE);
 
                 if (isForceReplaceInnerLayout()){
                     mInternalHeaderLayout.addCardHeader(null);
@@ -371,7 +395,6 @@ public class CardView extends BaseCardView {
         }
     }
 
-
     /**
      * Setup the Thumbnail View
      */
@@ -407,35 +430,6 @@ public class CardView extends BaseCardView {
     // Listeners
     //--------------------------------------------------------------------------
 
-    protected void setupExpandAction(){
-
-        //Config ExpandLayout and its animation
-        if ( mInternalExpandLayout !=null && ( (mCardHeader!=null && mCardHeader.isButtonExpandVisible()) ||
-                mCard.getViewToClickToExpand()!=null)  ){
-
-            //Create the expand/collapse animator
-            mInternalExpandLayout.getViewTreeObserver().addOnPreDrawListener(
-                    new ViewTreeObserver.OnPreDrawListener() {
-
-                        @Override
-                        public boolean onPreDraw() {
-                            mInternalExpandLayout.getViewTreeObserver().removeOnPreDrawListener(this);
-
-                            View parent = (View) mInternalExpandLayout.getParent();
-                            final int widthSpec = View.MeasureSpec.makeMeasureSpec(parent.getMeasuredWidth() - parent.getPaddingLeft() - parent.getPaddingRight(), View.MeasureSpec.AT_MOST);
-                            final int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-                            mInternalExpandLayout.measure(widthSpec, heightSpec);
-
-                            mExpandAnimator = createSlideAnimator(0, mInternalExpandLayout.getMeasuredHeight());
-                            return true;
-                        }
-                    });
-        }
-
-        //Setup action and callback
-        setupExpandCollapseActionListener();
-    }
-
     /**
      * Setup All listeners
      */
@@ -445,7 +439,7 @@ public class CardView extends BaseCardView {
 
         //Swipe listener
         if (mCard.isSwipeable()){
-            this.setOnTouchListener(new SwipeDismissViewTouchListener(this, mCard,new SwipeDismissViewTouchListener.DismissCallbacks() {
+            this.setOnTouchListener(new SwipeDismissViewTouchListener(this, mCard, new SwipeDismissViewTouchListener.DismissCallbacks() {
                 @Override
                 public boolean canDismiss(Card card) {
                     return card.isSwipeable();
@@ -459,6 +453,18 @@ public class CardView extends BaseCardView {
                         card.onSwipeCard();
                     }
                 }
+
+				@Override
+				public void onAccept(CardView cardView, Card card) {
+					// TODO Auto-generated method stub
+					final ViewGroup vg = (ViewGroup)(cardView.getParent());
+                    if (vg!=null){
+                        vg.removeView(cardView);
+                        card.onAcceptCard();
+                    }
+				}
+
+				 
             }));
         }else{
             this.setOnTouchListener(null);
@@ -591,79 +597,34 @@ public class CardView extends BaseCardView {
     // Expandable Actions and Listeners
     //--------------------------------------------------------------------------
 
+    protected int mCollapsedHeight;
+    protected int mExpandedHeight=-1;
+
     /**
      * Add ClickListener to expand and collapse hidden view
      */
-    protected void setupExpandCollapseActionListener() {
-        if (mInternalExpandLayout != null) {
+    protected void setupExpandCollapseAction() {
+        if (mInternalExpandLayout!=null){
             mInternalExpandLayout.setVisibility(View.GONE);
 
+            if (mCardHeader!=null){
+                if (mCardHeader.isButtonExpandVisible()){
+                    mInternalHeaderLayout.setOnClickExpandCollapseActionListener(new TitleViewOnClickListener(mInternalExpandLayout,mCard));
 
-            ViewToClickToExpand viewToClickToExpand = null;
-
-            //ButtonExpandVisible has a priority to viewClickToExpand
-            if (mCardHeader != null && mCardHeader.isButtonExpandVisible()) {
-
-                viewToClickToExpand = ViewToClickToExpand.builder()
-                        .setupView(mInternalHeaderLayout.getImageButtonExpand())
-                        .highlightView(true);
-
-            } else if (mCard.getViewToClickToExpand() != null) {
-
-                viewToClickToExpand = mCard.getViewToClickToExpand();
-            }
-
-            if (viewToClickToExpand != null) {
-
-                TitleViewOnClickListener titleViewOnClickListener = new TitleViewOnClickListener(mInternalExpandLayout, mCard, viewToClickToExpand.isViewToSelect());
-
-                if (mCardHeader!=null && mCardHeader.isButtonExpandVisible() && mInternalHeaderLayout != null) {
-                    mInternalHeaderLayout.setOnClickExpandCollapseActionListener(titleViewOnClickListener);
-                }
-
-                View viewToClick = viewToClickToExpand.getViewToClick();
-                if (viewToClick != null) {
-                    viewToClick.setOnClickListener(titleViewOnClickListener);
-                }else{
-                    ViewToClickToExpand.CardElementUI cardElementUI=viewToClickToExpand.getCardElementUIToClick();
-                    if (cardElementUI!=null){
-                        switch (cardElementUI){
-                            case CARD:
-                                viewToClick = this;
-                                break;
-                            case HEADER:
-                                viewToClick = getInternalHeaderLayout();
-                                break;
-                            case THUMBNAIL:
-                                viewToClick = getInternalThumbnailLayout();
-                                break;
-                            case MAIN_CONTENT:
-                                viewToClick = getInternalContentLayout();
-                                break;
-                        }
-                        if (viewToClick != null) {
-                            viewToClick.setOnClickListener(titleViewOnClickListener);
-                        }
+                    if (isExpanded()){
+                        //Make layout visible and button selected
+                        mInternalExpandLayout.setVisibility(View.VISIBLE);
+                        if(mInternalHeaderLayout.getImageButtonExpand()!=null)
+                            mInternalHeaderLayout.getImageButtonExpand().setSelected(true);
+                    }else{
+                        //Make layout hidden and button not selected
+                        mInternalExpandLayout.setVisibility(View.GONE);
+                        if(mInternalHeaderLayout.getImageButtonExpand()!=null)
+                            mInternalHeaderLayout.getImageButtonExpand().setSelected(false);
                     }
-                }
 
-                if (isExpanded()) {
-                    //Make layout visible and button selected
-                    mInternalExpandLayout.setVisibility(View.VISIBLE);
-                    if (viewToClick != null) {
-                        if (viewToClickToExpand.isViewToSelect())
-                            viewToClick.setSelected(true);
-                    }
-                } else {
-                    //Make layout hidden and button not selected
-                    mInternalExpandLayout.setVisibility(View.GONE);
-                    if (viewToClick != null) {
-                        if (viewToClickToExpand.isViewToSelect())
-                            viewToClick.setSelected(false);
-                    }
                 }
             }
-
         }
     }
 
@@ -687,10 +648,6 @@ public class CardView extends BaseCardView {
                 if (mCardExpand.getInnerLayout()>-1)
                     mCardExpand.setupInnerViewElements((ViewGroup)mInternalExpandLayout,mInternalExpandInnerView);
             }
-
-            ViewGroup.LayoutParams layoutParams = mInternalExpandLayout.getLayoutParams();
-            layoutParams.height = LayoutParams.WRAP_CONTENT;
-            mInternalExpandLayout.setLayoutParams(layoutParams);
         }
     }
 
@@ -703,16 +660,10 @@ public class CardView extends BaseCardView {
 
         private View mContentParent;
         private Card mCard;
-        private boolean viewToSelect=true;
 
         private TitleViewOnClickListener(View contentParent,Card card) {
-            this (contentParent, card,true);
-        }
-
-        private TitleViewOnClickListener(View contentParent,Card card,boolean viewToSelect) {
             this.mContentParent = contentParent;
             this.mCard=card;
-            this.viewToSelect=viewToSelect;
         }
 
         @Override
@@ -720,12 +671,10 @@ public class CardView extends BaseCardView {
             boolean isVisible = mContentParent.getVisibility() == View.VISIBLE;
             if (isVisible) {
                 animateCollapsing();
-                if (viewToSelect)
-                    view.setSelected(false);
+                view.setSelected(false);
             } else {
                 animateExpanding();
-                if (viewToSelect)
-                    view.setSelected(true);
+                view.setSelected(true);
             }
         }
 
@@ -816,6 +765,7 @@ public class CardView extends BaseCardView {
     protected void onSizeChanged(int xNew, int yNew, int xOld, int yOld)
     {
         super.onSizeChanged(xNew, yNew, xOld, yOld);
+        mExpandedHeight = yNew;
     }
 
     // -------------------------------------------------------------
@@ -885,20 +835,20 @@ public class CardView extends BaseCardView {
         return mInternalExpandLayout;
     }
 
-    /**
-     * FIXME
-     * @return
-     */
-    public View getInternalContentLayout() {
-        return mInternalContentLayout;
+    public int getCollapsedHeight() {
+        return mCollapsedHeight;
     }
 
-    /**
-     * FIXME
-     * @return
-     */
-    public View getInternalInnerView() {
-        return mInternalInnerView;
+    public void setCollapsedHeight(int collapsedHeight) {
+        mCollapsedHeight = collapsedHeight;
+    }
+
+    public int getExpandedHeight() {
+        return mExpandedHeight;
+    }
+
+    public void setExpandedHeight(int expandedHeight) {
+        mExpandedHeight = expandedHeight;
     }
 
     /**

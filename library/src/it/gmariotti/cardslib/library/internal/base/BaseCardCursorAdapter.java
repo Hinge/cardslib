@@ -1,6 +1,6 @@
 /*
  * ******************************************************************************
- *   Copyright (c) 2013-2014 Gabriele Mariotti.
+ *   Copyright (c) 2013 Gabriele Mariotti.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,12 +20,10 @@ package it.gmariotti.cardslib.library.internal.base;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.view.View;
 import android.widget.CursorAdapter;
 
 import it.gmariotti.cardslib.library.R;
 import it.gmariotti.cardslib.library.internal.Card;
-import it.gmariotti.cardslib.library.view.CardView;
 
 /**
  * Base Cursor Adapter
@@ -93,15 +91,6 @@ public abstract class BaseCardCursorAdapter extends CursorAdapter {
             return true;
         else
             return false;
-    }
-
-    /**
-     * This method is used in with multichoice
-     * @param mCard
-     * @param mCardView
-     */
-    protected void setupMultichoice(View view,Card mCard,CardView mCardView,long position){
-        //empty
     }
 
     @Override

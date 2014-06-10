@@ -1,35 +1,33 @@
 
-/*
- * ******************************************************************************
- *   Copyright (c) 2013 Roman Nurik,2013-2014 Gabriele Mariotti.
- *
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- *  *****************************************************************************
- */
-
 package it.gmariotti.cardslib.library.view.listener;
 
+/* Copyright 2013 Roman Nurik, Gabriele Mariotti
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import it.gmariotti.cardslib.library.internal.Card;
+import it.gmariotti.cardslib.library.view.CardView;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-
-import it.gmariotti.cardslib.library.internal.Card;
-import it.gmariotti.cardslib.library.view.CardView;
+import android.widget.ListView;
 
 /**
  * It is based on Roman Nurik code.
@@ -80,6 +78,17 @@ public class SwipeDismissViewTouchListener implements View.OnTouchListener {
          * @parma card                   Card
          */
         void onDismiss(CardView cardView,Card card);
+        
+        
+        /**
+         * Called when the user has indicated they she would like to dismiss one or more list item
+         * positions.
+         *
+         * @param listView               The originating {@link ListView}.
+         * @param reverseSortedPositions An array of positions to dismiss, sorted in descending
+         *                               order for convenience.
+         */
+        void onAccept(CardView cardView, Card card);
     }
 
     /**
@@ -145,7 +154,7 @@ public class SwipeDismissViewTouchListener implements View.OnTouchListener {
                     break;
                 }
 
-                float deltaX = motionEvent.getRawX() - mDownX;
+                final float deltaX = motionEvent.getRawX() - mDownX;
                 mVelocityTracker.addMovement(motionEvent);
                 mVelocityTracker.computeCurrentVelocity(1000);
                 float velocityX = mVelocityTracker.getXVelocity();
@@ -172,7 +181,11 @@ public class SwipeDismissViewTouchListener implements View.OnTouchListener {
                             .setListener(new AnimatorListenerAdapter() {
                                 @Override
                                 public void onAnimationEnd(Animator animation) {
-                                    performDismiss();
+                                	Log.d("test", "animation");
+                                	if(mDownX > deltaX)
+                                		performDismiss(false);
+                                	else
+                                		performDismiss(true);
                                 }
                             });
                 } else {
@@ -221,11 +234,11 @@ public class SwipeDismissViewTouchListener implements View.OnTouchListener {
     }
 
 
-    private void performDismiss() {
+    private void performDismiss(final boolean accept) {
         // Animate the dismissed view to zero-height and then fire the dismiss callback.
         // This triggers layout on each animation frame; in the future we may want to do something
         // smarter and more performant.
-
+    	Log.d("test", ""+accept);
         final ViewGroup.LayoutParams lp = mCardView.getLayoutParams();
         final int originalHeight = mCardView.getHeight();
 
@@ -236,6 +249,9 @@ public class SwipeDismissViewTouchListener implements View.OnTouchListener {
             @Override
             public void onAnimationEnd(Animator animation) {
 
+            	if(accept)
+                mCallbacks.onDismiss(mCardView,mToken);
+            	else
                 mCallbacks.onDismiss(mCardView,mToken);
                 // Reset view presentation
                 mCardView.setAlpha(1f);
