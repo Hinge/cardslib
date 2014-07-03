@@ -1,15 +1,15 @@
 apply plugin: 'android-library'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.1.0"
+    compileSdkVersion 20
+    buildToolsVersion "20.0.0"
 
     defaultConfig {
         applicationId 'it.gmariotti.cardslib.library'
         versionCode 31
         versionName "1.6.1-SNAPSHOT"
         minSdkVersion 14
-        targetSdkVersion 19
+        targetSdkVersion 20
     }
 
     // This is important, it will run lint checks but won't abort build
